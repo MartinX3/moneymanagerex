@@ -1,0 +1,27 @@
+# Note: This workflow requires some secrets setup, and set on this repo with the names:
+# 'MMEX_PUBLISH_TOKEN' (A GitHub Personal Access Token with appropriate permissions - for publishing the built artifacts)
+# 'APPLEID' (The username of your Apple developer account - for notarizing the mac artifacts)
+# 'APPLEID_PASSWORD' (An app-specific password - for notarizing the mac artifacts)
+# 'CSC_LINK' (The HTTPS link or local path to certificate - for code signing of mac artifacts)
+# 'CSC_KEY_PASSWORD' (The password to decrypt the certificate given in CSC_LINK - for code signing of mac artifacts)
+# 'WIN_CSC_LINK' (The HTTPS link or local path to certificate - for code signing of windows artifacts)
+# 'WIN_CSC_KEY_PASSWORD' (The password to decrypt the certificate given in CSC_LINK - for code signing of windows artifacts)
+
+name: Build and publish MMEX releases
+on:
+    push:
+        tags:
+            - "*"
+jobs:
+    download_project:
+        runs-on: ubuntu-latest
+        name: 'Checkout project'
+        steps:
+            -   name: Checkout project
+                uses: actions/checkout@v2
+            -   name: Test
+                run: |
+                    echo ${{ github.workspace }}
+                    ls -lha ${{ github.workspace }}
+                    pwd
+                    ls -lha
