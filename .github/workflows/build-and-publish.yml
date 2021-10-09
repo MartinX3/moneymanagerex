@@ -1,0 +1,161 @@
+# Note: This workflow requires some secrets setup, and set on this repo with the names:
+# 'MMEX_PUBLISH_TOKEN' (A GitHub Personal Access Token with appropriate permissions - for publishing the built artifacts)
+# 'APPLEID' (The username of your Apple developer account - for notarizing the mac artifacts)
+# 'APPLEID_PASSWORD' (An app-specific password - for notarizing the mac artifacts)
+# 'CSC_LINK' (The HTTPS link or local path to certificate - for code signing of mac artifacts)
+# 'CSC_KEY_PASSWORD' (The password to decrypt the certificate given in CSC_LINK - for code signing of mac artifacts)
+# 'WIN_CSC_LINK' (The HTTPS link or local path to certificate - for code signing of windows artifacts)
+# 'WIN_CSC_KEY_PASSWORD' (The password to decrypt the certificate given in CSC_LINK - for code signing of windows artifacts)
+
+name: Build and publish MMEX releases
+on:
+    push:
+        tags:
+            - "v*"
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ ubuntu-latest, windows-latest, macos-latest ]
+        env:
+            CCACHE_DIR: ${{ github.workspace }}/.ccache
+        steps:
+            -   name: Check out
+                uses: actions/checkout@v2
+                with:
+                    submodules: 'recursive'
+
+            -   name: (${{runner.os}}) Install important software
+                if: runner.os == 'Linux'
+                run: |
+                    sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ focal universe'
+                    sudo apt-get update
+                    sudo apt-get install -y --no-install-recommends \
+                        ccache \
+                        clang \
+                        cmake \
+                        gettext \
+                        libcurl4-openssl-dev \
+                        liblua5.3-dev \
+                        libwxgtk3.1unofficial-dev \
+                        rapidjson-dev
+                    ln -s $(which ccache) ./ccache
+
+            -   name: (${{runner.os}}) Install important software
+                if: runner.os == 'macOS'
+                run: |
+                    brew install ccache
+                    ln -s $(which ccache) ./ccache
+                    mkdir ${{ runner.temp }}/wxWidgets
+                    cd ${{ runner.temp }}/wxWidgets
+                    curl -fsOLS https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxWidgets-3.1.5.tar.bz2
+                    tar -xf wxWidgets-*.tar.bz2 --strip-components=1
+
+            -   name: (${{runner.os}}) Install important software
+                if: runner.os == 'Windows'
+                run: |
+                    curl -OL https://github.com/ccache/ccache/releases/download/v4.4.2/ccache-4.4.2-windows-64.zip
+                    unzip -j ccache-*-windows-64.zip '*/ccache.exe'
+                    mkdir ${{ runner.temp }}/wxWidgets
+                    cd ${{ runner.temp }}/wxWidgets
+                    curl -OL https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxWidgets-3.1.5.zip
+                    unzip wxWidgets-*.zip
+
+            -   name: Set up ccache
+                run: |
+                    mkdir ./.ccache
+                    ./ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
+
+            -   name: (${{runner.os}}) Set up C++ Compiler
+                if: runner.os == 'Linux'
+                run: |
+                    sudo update-alternatives --set cc /usr/bin/clang
+                    sudo update-alternatives --set c++ /usr/bin/clang++
+
+            -   name: (${{runner.os}}) Set up wxWidgets
+                if: runner.os == 'macOS'
+                run: |
+                    cd ${{ runner.temp }}/wxWidgets
+                    mkdir build-cocoa
+                    cd build-cocoa
+                    export MAKEFLAGS=-j
+                    ../configure \
+                        --disable-shared \
+                        --enable-cxx11 \
+                        --with-cxx=11 \
+                        --with-macosx-version-min=10.15 \
+                        --without-libtiff
+
+            -   name: (${{runner.os}}) Set up wxWidgets
+                if: runner.os == 'Windows'
+                run: |
+                    setx wxwin %RUNNER_TEMP%\wxWidgets
+
+            -   name: Cache build cache
+                uses: actions/cache@v2
+                with:
+                    path: |
+                        ${{ github.workspace }}/.ccache
+                    key: ${{ runner.os }}-build-cache-${{ github.sha }}
+                    restore-keys: ${{ runner.os }}-build-cache-
+
+            -   name: (${{runner.os}}) Build release
+                if: runner.os == 'Linux'
+                run: |
+                    mkdir build
+                    cd build
+                    export MAKEFLAGS=-j
+                    cmake \
+                        -DCMAKE_BUILD_TYPE=Release \
+                        -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config-gtk3 \
+                        ..
+                    cmake --build . --target package
+
+            -   name: (${{runner.os}}) Build release
+                if: runner.os == 'macOS'
+                run: |
+                    mkdir build
+                    cd build
+                    export MAKEFLAGS=-j
+                    cmake -DCMAKE_CXX_FLAGS="-w" \
+                        -DwxWidgets_CONFIG_EXECUTABLE=${{ runner.temp }}/wxWidgets/build-cocoa/wx-config \
+                        -DCMAKE_BUILD_TYPE=Release \
+                        -DMACOSX_DEPLOYMENT_TARGET=10.15 \
+                        --with-macosx-version-min=10.15 \
+                        ..
+                    cmake --build . --target package
+
+            -   name: (${{runner.os}}) Build release
+                if: runner.os == 'Windows'
+                run: |
+                    echo "cmake windows magic"
+
+            -   name: (${{runner.os}}) Show release
+                if: runner.os == 'Linux' || runner.os == 'macOS'
+                run: |
+                    echo "ls -lha"
+                    ls -lha
+                    echo "ls -lha build"
+                    ls -lha build
+
+            -   name: (${{runner.os}}) Show release
+                if: runner.os == 'Windows'
+                run: |
+                    echo "dir"
+                    dir
+                    echo "dir build"
+                    dir build
+
+
+
+
+
+            # Only upload artifacts built on Linux
+            -   name: Upload build artifact
+                if: runner.os == 'Linuxx' # broken to avoid execution
+                uses: actions/upload-artifact@v2
+                with:
+                    name: ${{ github.sha }}
+                    path: out
