@@ -2,6 +2,7 @@
 Money Manager Ex
 ================
 
+[![Build and publish MMEX releases][GitHubActionsCIBadge]][GitHubActionsCI]
 [![stable]][GitHubLatest] [![unstable]][GitHubDL] [![a]][AppVeyor]
 [![t]][Travis] [![s]][SourceForgeDL] [![gha]][GitHubDL] [![ghl]][GitHubLatest]
 [![p]][packagecloud] [![w]][website] [![i]][GitHubIssues] [![cd]][CodeDocs]
@@ -95,6 +96,8 @@ Tips
 [AppVeyor]: https://ci.appveyor.com/project/moneymanagerex/moneymanagerex "AppVeyor CI"
 [Travis]: http://travis-ci.com/moneymanagerex/moneymanagerex "Travis CI"
 [OpenHub]: https://www.openhub.net/p/moneymanagerex "Open Hub report"
+[GitHubActionsCI]: https://github.com/MartinX3/moneymanagerex/actions/workflows/build-and-publish.yml
+[GitHubActionsCIBadge]: https://github.com/MartinX3/moneymanagerex/actions/workflows/build-and-publish.yml/badge.svg
 [GitHubIssues]: https://github.com/moneymanagerex/moneymanagerex/issues "open issues on GitHub"
 [SourceForgeDL]: https://sourceforge.net/projects/moneymanagerex/files/latest "SourceForge downloads"
 [GitHubDL]: https://ci.appveyor.com/project/moneymanagerex/moneymanagerex/history "appveyor"
