@@ -30,6 +30,7 @@ jobs:
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'Linux'
                 run: |
+                    sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
                     sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ focal universe'
                     sudo apt-get update
                     sudo apt-get install -y --no-install-recommends \
@@ -46,22 +47,20 @@ jobs:
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'macOS'
                 run: |
-                    brew install ccache
+                    brew install ^
+                        ccache ^
+                        wxwidgets
                     ln -s $(which ccache) ./ccache
-                    mkdir ${{ runner.temp }}/wxWidgets
-                    cd ${{ runner.temp }}/wxWidgets
-                    curl -fsOLS https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxWidgets-3.1.5.tar.bz2
-                    tar -xf wxWidgets-*.tar.bz2 --strip-components=1
 
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'Windows'
                 run: |
-                    curl -OL https://github.com/ccache/ccache/releases/download/v4.4.2/ccache-4.4.2-windows-64.zip
-                    unzip -j ccache-*-windows-64.zip '*/ccache.exe'
-                    mkdir ${{ runner.temp }}/wxWidgets
-                    cd ${{ runner.temp }}/wxWidgets
-                    curl -OL https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxWidgets-3.1.5.zip
-                    unzip wxWidgets-*.zip
+                    choco install -y ^
+                        ccache ^
+                        cmake ^
+                        curl ^
+                        nsis ^
+                        wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -73,25 +72,6 @@ jobs:
                 run: |
                     sudo update-alternatives --set cc /usr/bin/clang
                     sudo update-alternatives --set c++ /usr/bin/clang++
-
-            -   name: (${{runner.os}}) Set up wxWidgets
-                if: runner.os == 'macOS'
-                run: |
-                    cd ${{ runner.temp }}/wxWidgets
-                    mkdir build-cocoa
-                    cd build-cocoa
-                    export MAKEFLAGS=-j
-                    ../configure \
-                        --disable-shared \
-                        --enable-cxx11 \
-                        --with-cxx=11 \
-                        --with-macosx-version-min=10.15 \
-                        --without-libtiff
-
-            -   name: (${{runner.os}}) Set up wxWidgets
-                if: runner.os == 'Windows'
-                run: |
-                    setx wxwin %RUNNER_TEMP%\wxWidgets
 
             -   name: Cache build cache
                 uses: actions/cache@v2
@@ -120,17 +100,28 @@ jobs:
                     cd build
                     export MAKEFLAGS=-j
                     cmake -DCMAKE_CXX_FLAGS="-w" \
-                        -DwxWidgets_CONFIG_EXECUTABLE=${{ runner.temp }}/wxWidgets/build-cocoa/wx-config \
                         -DCMAKE_BUILD_TYPE=Release \
                         -DMACOSX_DEPLOYMENT_TARGET=10.15 \
-                        --with-macosx-version-min=10.15 \
                         ..
                     cmake --build . --target package
 
             -   name: (${{runner.os}}) Build release
                 if: runner.os == 'Windows'
                 run: |
-                    echo "cmake windows magic"
+                    mkdir build
+                    cd build
+                    set "CL=/MP"
+                    cmake ^
+                        -G "Visual Studio 16 2019 Win64" ^
+                        --build .. ^
+                        --target install ^
+                        --config Release ^
+                        -- ^
+                        /maxcpucount ^
+                        /verbosity:minimal ^
+                        /nologo ^
+                        /p:PreferredToolArchitecture=x64
+                    cpack .
 
             -   name: (${{runner.os}}) Show release
                 if: runner.os == 'Linux' || runner.os == 'macOS'
