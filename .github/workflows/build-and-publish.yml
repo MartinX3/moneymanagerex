@@ -40,13 +40,8 @@ jobs:
                         gettext \
                         libcurl4-openssl-dev \
                         liblua5.3-dev \
-                        libwxbase3.1-0-unofficial \
-                        libwxbase3.1unofficial-dev \
-                        libwxgtk3.1-0-unofficial \
                         libwxgtk3.1unofficial-dev \
                         rapidjson-dev \
-                        wx3.1-headers \
-                        wx-common
                     ln -s $(which ccache) ./ccache
 
             -   name: (${{runner.os}}) Install important software
@@ -63,7 +58,7 @@ jobs:
             -   name: Set up ccache
                 run: |
                     mkdir ./.ccache
-                    ./ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
+                    ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
 
             -   name: (${{runner.os}}) Set up C++ Compiler
                 if: runner.os == 'Linux'
@@ -76,7 +71,7 @@ jobs:
                 with:
                     path: |
                         ${{ github.workspace }}/.ccache
-                    key: ${{ runner.os }}-build-cache-${{ github.sha }}
+                    key: ${{ runner.os }}-build-cache-${{ github.repository }}
                     restore-keys: ${{ runner.os }}-build-cache-
 
             -   name: (${{runner.os}}) Build release
@@ -87,7 +82,6 @@ jobs:
                     export MAKEFLAGS=-j
                     cmake \
                         -DCMAKE_BUILD_TYPE=Release \
-                        -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config-gtk3 \
                         ..
                     cmake --build . --target package
 
