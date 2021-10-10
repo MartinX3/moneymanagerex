@@ -42,7 +42,6 @@ jobs:
                         liblua5.3-dev \
                         libwxgtk3.1unofficial-dev \
                         rapidjson-dev \
-                    ln -s $(which ccache) ./ccache
 
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'macOS'
@@ -103,7 +102,7 @@ jobs:
                     mkdir build
                     cd build
                     set "CL=/MP"
-                    cmake -G "Visual Studio 16 2019 Win64" --build .. --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
+                    cmake -G "Visual Studio 16 2019 Win64" --build .. --target install --config Release /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
             -   name: (${{runner.os}}) Show release
