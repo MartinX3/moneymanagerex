@@ -40,27 +40,25 @@ jobs:
                         gettext \
                         libcurl4-openssl-dev \
                         liblua5.3-dev \
+                        libwxbase3.1-0-unofficial \
+                        libwxbase3.1unofficial-dev \
+                        libwxgtk3.1-0-unofficial \
                         libwxgtk3.1unofficial-dev \
-                        rapidjson-dev
+                        rapidjson-dev \
+                        wx3.1-headers \
+                        wx-common
                     ln -s $(which ccache) ./ccache
 
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'macOS'
                 run: |
-                    brew install ^
-                        ccache ^
-                        wxwidgets
+                    brew install ccache wxwidgets
                     ln -s $(which ccache) ./ccache
 
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'Windows'
                 run: |
-                    choco install -y ^
-                        ccache ^
-                        cmake ^
-                        curl ^
-                        nsis ^
-                        wxwidgets
+                    choco install -y ccache cmake curl nsis wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -111,16 +109,7 @@ jobs:
                     mkdir build
                     cd build
                     set "CL=/MP"
-                    cmake ^
-                        -G "Visual Studio 16 2019 Win64" ^
-                        --build .. ^
-                        --target install ^
-                        --config Release ^
-                        -- ^
-                        /maxcpucount ^
-                        /verbosity:minimal ^
-                        /nologo ^
-                        /p:PreferredToolArchitecture=x64
+                    cmake -G "Visual Studio 16 2019 Win64" --build .. --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
             -   name: (${{runner.os}}) Show release
