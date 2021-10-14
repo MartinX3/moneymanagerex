@@ -91,6 +91,7 @@ jobs:
                     cmake --build . --target package
 
             -   name: (${{runner.os}}) Build release
+                uses: ilammy/msvc-dev-cmd@v1
                 if: runner.os == 'Windows'
                 run: |
                     mkdir build
