@@ -22,6 +22,7 @@ jobs:
         env:
             CCACHE_DIR: ${{ github.workspace }}/.ccache
         steps:
+            -   uses: ilammy/msvc-dev-cmd@v1
             -   name: Check out
                 uses: actions/checkout@v2
                 with:
@@ -91,7 +92,6 @@ jobs:
                     cmake --build . --target package
 
             -   name: (${{runner.os}}) Build release
-                uses: ilammy/msvc-dev-cmd@v1
                 if: runner.os == 'Windows'
                 run: |
                     mkdir build
