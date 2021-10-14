@@ -47,7 +47,6 @@ jobs:
                 if: runner.os == 'macOS'
                 run: |
                     brew install ccache wxwidgets
-                    ln -s $(which ccache) ./ccache
 
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'Windows'
