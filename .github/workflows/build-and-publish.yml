@@ -42,10 +42,10 @@ jobs:
                         gettext \
                         libcurl4-openssl-dev \
                         liblua5.3-dev \
-                        libwxbase3.1unofficial-dev \
-                        libwxgtk-media3.1unofficial-dev \
-                        libwxgtk-webview3.1unofficial-dev \
-                        libwxgtk3.1unofficial-dev \
+                        libwxbase3.1unofficial3-dev \
+                        libwxgtk-media3.1unofficial3-dev \
+                        libwxgtk-webview3.1unofficial3-dev \
+                        libwxgtk3.1unofficial3-dev \
                         rapidjson-dev
 
             -   name: (${{runner.os}}) Install important software
@@ -100,7 +100,7 @@ jobs:
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
                     cmake -G "Visual Studio 16 2019" ..
                     set "CL=/MP"
-                    cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
+                    cmake -D CMAKE_C_COMPILER_LAUNCHER=ccache -D CMAKE_CXX_COMPILER_LAUNCHER=ccache --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
             -   name: (${{runner.os}}) Show release
