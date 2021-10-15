@@ -44,7 +44,7 @@ jobs:
                         liblua5.3-dev \
                         libwxbase3.1-dev \
                         libwxgtk-media3.1-dev \
-                        libwxgtk-webview3.1-dev \
+                        libwxgtk-webview3.1-0-unofficial3-dev \
                         libwxgtk3.1-dev \
                         rapidjson-dev \
                         wx3.1-headers
@@ -64,7 +64,6 @@ jobs:
                     7z x ${{ runner.temp }}\wxWidgets-3.1.5-headers.7z -o${{ runner.temp }}\wxwidgets
                     7z x ${{ runner.temp }}\wxMSW-3.1.5_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
                     7z x ${{ runner.temp }}\wxMSW-3.1.5_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
-                    setx wxwin ${{ runner.temp }}\wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -107,6 +106,7 @@ jobs:
                 run: |
                     mkdir build
                     cd build
+                    setx wxwin ${{ runner.temp }}\wxwidgets
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
                     cmake -G "Visual Studio 16 2019" ..
                     set "CL=/MP"
