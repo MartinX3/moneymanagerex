@@ -18,11 +18,12 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ ubuntu-latest, windows-latest, macos-latest ]
+                # Ubuntu 20.04 runs in a timeout because of so many code warnings with the newer clang
+                os: [ ubuntu-18.04, windows-latest, macos-latest ]
         env:
             CCACHE_DIR: ${{ github.workspace }}/.ccache
         steps:
-            -   uses: ilammy/msvc-dev-cmd@v1
+            -   uses: ilammy/msvc-dev-cmd@v1 # Only for the Windows build environment. Does nothing in the others.
             -   name: Check out
                 uses: actions/checkout@v2
                 with:
@@ -32,7 +33,7 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
-                    sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ focal universe'
+                    sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ bionic universe'
                     sudo apt-get update
                     sudo apt-get install -y --no-install-recommends \
                         ccache \
@@ -53,7 +54,7 @@ jobs:
 
             -   name: (${{runner.os}}) Install important software
                 if: runner.os == 'Windows'
-                run: choco install -y ccache cmake curl nsis wxwidgets
+                run: choco install -y ccache curl nsis wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -70,8 +71,8 @@ jobs:
                 uses: actions/cache@v2
                 with:
                     path: ${{ github.workspace }}/.ccache
-                    key: ${{ runner.os }}-build-cache-${{ github.repository }}
-                    restore-keys: ${{ runner.os }}-build-cache-
+                    key: ${{ runner.os }}-build-cache
+                    restore-keys: ${{ runner.os }}-build-cache
 
             -   name: (${{runner.os}}) Build release
                 if: runner.os == 'Linux'
@@ -96,8 +97,10 @@ jobs:
                 run: |
                     mkdir build
                     cd build
+                    set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
+                    cmake -G "Visual Studio 16 2019" ..
                     set "CL=/MP"
-                    cmake -G "Visual Studio 16 2019" --build .. --target install --config Release /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
+                    cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
             -   name: (${{runner.os}}) Show release
