@@ -25,9 +25,15 @@ jobs:
             -   uses: ilammy/msvc-dev-cmd@v1
                 if: runner.os == 'Windows'
 
-            -   name: Setting up variables
+            -   name: (${{ runner.os }}) Setting up variables
+                if: runner.os == 'Linux' || runner.os == 'macOS'
                 run: |
-                    echo "wx_widgets_version=3.1.7" >> $GITHUB_ENV
+                    echo "WX_WIDGETS_VERSION=3.1.7" >> $GITHUB_ENV
+
+            -   name: (${{ runner.os }}) Setting up variables
+                if: runner.os == 'Windows'
+                run: |
+                    echo "WX_WIDGETS_VERSION=3.1.7" >> $env:GITHUB_ENV
 
             -   name: Check out
                 uses: actions/checkout@v3
@@ -38,7 +44,7 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
-                    sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.wx_widgets_version }}/ubuntu/ focal universe'
+                    sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.WX_WIDGETS_VERSION }}/ubuntu/ focal universe'
                     sudo apt-get update
                     sudo apt-get install -y --no-install-recommends \
                         ccache \
@@ -69,12 +75,12 @@ jobs:
                 run: |
                     choco install --no-progress -y 7zip ccache curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:wx_widgets_version/wxWidgets-$env:wx_widgets_version-headers.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:wx_widgets_version/wxMSW-$env:wx_widgets_version_vc14x_x64_Dev.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:wx_widgets_version/wxMSW-$env:wx_widgets_version_vc14x_x64_ReleaseDLL.7z
-                    7z x ${{ runner.temp }}\wxWidgets-$env:wx_widgets_version-headers.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-$env:wx_widgets_version_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-$env:wx_widgets_version_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:WX_WIDGETS_VERSION/wxWidgets-$env:WX_WIDGETS_VERSION-headers.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:WX_WIDGETS_VERSION/wxMSW-$env:WX_WIDGETS_VERSION_vc14x_x64_Dev.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:WX_WIDGETS_VERSION/wxMSW-$env:WX_WIDGETS_VERSION_vc14x_x64_ReleaseDLL.7z
+                    7z x ${{ runner.temp }}\wxWidgets-$env:WX_WIDGETS_VERSION-headers.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-$env:WX_WIDGETS_VERSION_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-$env:WX_WIDGETS_VERSION_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -109,7 +115,7 @@ jobs:
                 run: |
                     mkdir build
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DMACOSX_DEPLOYMENT_TARGET=11.6 .
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=11.6 .
                     cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
