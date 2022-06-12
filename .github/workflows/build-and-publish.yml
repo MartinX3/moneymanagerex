@@ -67,14 +67,14 @@ jobs:
             -   name: (${{ runner.os }}) Install important software
                 if: runner.os == 'Windows'
                 run: |
-                    choco install -y 7zip ccache curl nsis
+                    choco install --no-progress -y 7zip ccache curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v{{ $env:wx_widgets_version }}/wxWidgets-{{ $env:wx_widgets_version }}-headers.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v{{ $env:wx_widgets_version }}/wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_Dev.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v{{ $env:wx_widgets_version }}/wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z
-                    7z x ${{ runner.temp }}\wxWidgets-{{ $env:wx_widgets_version }}-headers.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:wx_widgets_version/wxWidgets-$env:wx_widgets_version-headers.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:wx_widgets_version/wxMSW-$env:wx_widgets_version_vc14x_x64_Dev.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v$env:wx_widgets_version/wxMSW-$env:wx_widgets_version_vc14x_x64_ReleaseDLL.7z
+                    7z x ${{ runner.temp }}\wxWidgets-$env:wx_widgets_version-headers.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-$env:wx_widgets_version_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-$env:wx_widgets_version_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: Set up ccache
                 run: |
