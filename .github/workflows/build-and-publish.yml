@@ -18,14 +18,14 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # Ubuntu 20.04 runs in a timeout because of so many code warnings with the newer clang
-                os: [ ubuntu-18.04, windows-latest, macos-latest ]
+                os: [ ubuntu-latest, windows-latest, macos-latest ]
         env:
             CCACHE_DIR: ${{ github.workspace }}/.ccache
         steps:
-            -   uses: ilammy/msvc-dev-cmd@v1 # Only for the Windows build environment. Does nothing in the others.
+            -   uses: ilammy/msvc-dev-cmd@v1
+                if: runner.os == 'Windows'
             -   name: Check out
-                uses: actions/checkout@v2
+                uses: actions/checkout@v3
                 with:
                     submodules: 'recursive'
 
@@ -77,7 +77,7 @@ jobs:
                     sudo update-alternatives --set c++ /usr/bin/clang++
 
             -   name: Build cache
-                uses: actions/cache@v2
+                uses: actions/cache@v3
                 with:
                     path: ${{ github.workspace }}/.ccache
                     key: ${{ runner.os }}-build-cache-${{ hashFiles('**/lockfiles') }}
@@ -129,14 +129,9 @@ jobs:
                     echo "dir build"
                     dir build
 
-
-
-
-
-            # Only upload artifacts built on Linux
-            -   name: Upload build artifact
-                if: runner.os == 'Linuxx' # broken to avoid execution
-                uses: actions/upload-artifact@v2
+            -   name: (${{ runner.os }}) Upload artifact
+                if: runner.os == 'macOS'
+                uses: actions/upload-artifact@v3
                 with:
-                    name: ${{ github.sha }}
-                    path: out
+                    name: MacOS-Release
+                    path: build/*.dmg
