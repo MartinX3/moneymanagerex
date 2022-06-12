@@ -69,12 +69,12 @@ jobs:
                 run: |
                     choco install -y 7zip ccache curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env.wx_widgets_version }}/wxWidgets-${{ env.wx_widgets_version }}-headers.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env.wx_widgets_version }}/wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_Dev.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env.wx_widgets_version }}/wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z
-                    7z x ${{ runner.temp }}\wxWidgets-${{ env.wx_widgets_version }}-headers.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v{{ $env:wx_widgets_version }}/wxWidgets-{{ $env:wx_widgets_version }}-headers.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v{{ $env:wx_widgets_version }}/wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_Dev.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v{{ $env:wx_widgets_version }}/wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z
+                    7z x ${{ runner.temp }}\wxWidgets-{{ $env:wx_widgets_version }}-headers.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-{{ $env:wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -98,6 +98,8 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     mkdir build
+                    # Disable the warnings, or github actions will exit code 143 the pipeline run.
+                    export CXXFLAGS=-w
                     export MAKEFLAGS=-j
                     cmake -DCMAKE_BUILD_TYPE=Release .
                     cmake --build . --target package
@@ -106,9 +108,8 @@ jobs:
                 if: runner.os == 'macOS'
                 run: |
                     mkdir build
-                    cd build
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_CXX_FLAGS="-w" -DCMAKE_BUILD_TYPE=Release -DMACOSX_DEPLOYMENT_TARGET=10.15 ..
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DMACOSX_DEPLOYMENT_TARGET=11.6 .
                     cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
@@ -124,7 +125,7 @@ jobs:
                     cpack .
 
             -   name: (${{ runner.os }}) Show release
-                if: runner.os == 'Linux' || runner.os == 'macOS'
+                if: runner.os == 'Linux'
                 run: |
                     echo "ls -lha"
                     ls -lha
