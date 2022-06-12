@@ -24,6 +24,11 @@ jobs:
         steps:
             -   uses: ilammy/msvc-dev-cmd@v1
                 if: runner.os == 'Windows'
+
+            -   name: Setting up variables
+                run: |
+                    echo "wx_widgets_version=3.1.7" >> $GITHUB_ENV
+
             -   name: Check out
                 uses: actions/checkout@v3
                 with:
@@ -33,7 +38,7 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
-                    sudo apt-add-repository 'deb https://repos.codelite.org/wx3.1.5/ubuntu/ bionic universe'
+                    sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.wx_widgets_version }}/ubuntu/ focal universe'
                     sudo apt-get update
                     sudo apt-get install -y --no-install-recommends \
                         ccache \
@@ -42,12 +47,18 @@ jobs:
                         gettext \
                         libcurl4-openssl-dev \
                         liblua5.3-dev \
-                        libwxbase3.1-dev \
-                        libwxgtk-media3.1-dev \
-                        libwxgtk-webview3.1-0-unofficial3-dev \
-                        libwxgtk3.1-dev \
+                        libwxbase3.1-0-unofficial \
+                        libwxbase3.1unofficial-dev \
+                        libwxgtk-media3.1-0-unofficial \
+                        libwxgtk-media3.1unofficial-dev \
+                        libwxgtk-webview3.1-0-unofficial \
+                        libwxgtk-webview3.1unofficial-dev \
+                        libwxgtk3.1-0-unofficial \
+                        libwxgtk3.1unofficial-dev \
                         rapidjson-dev \
-                        wx3.1-headers
+                        wx-common \
+                        wx3.1-headers \
+                        wx3.1-i18n \
 
             -   name: (${{ runner.os }}) Install important software
                 if: runner.os == 'macOS'
@@ -58,12 +69,12 @@ jobs:
                 run: |
                     choco install -y 7zip ccache curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxWidgets-3.1.5-headers.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxMSW-3.1.5_vc14x_x64_Dev.7z
-                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxMSW-3.1.5_vc14x_x64_ReleaseDLL.7z
-                    7z x ${{ runner.temp }}\wxWidgets-3.1.5-headers.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-3.1.5_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-3.1.5_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env.wx_widgets_version }}/wxWidgets-${{ env.wx_widgets_version }}-headers.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env.wx_widgets_version }}/wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_Dev.7z
+                    curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env.wx_widgets_version }}/wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z
+                    7z x ${{ runner.temp }}\wxWidgets-${{ env.wx_widgets_version }}-headers.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-${{ env.wx_widgets_version }}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -87,9 +98,8 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     mkdir build
-                    cd build
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release ..
+                    cmake -DCMAKE_BUILD_TYPE=Release .
                     cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
