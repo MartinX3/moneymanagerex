@@ -45,8 +45,10 @@ jobs:
                 run: |
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
                     sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.WX_WIDGETS_VERSION }}/ubuntu/ focal universe'
-                    sudo apt-get update
-                    sudo apt-get install -y --no-install-recommends \
+                    # Quiet apt-get or github actions will exit code 143 the pipeline run.
+                    sudo apt-get update -qq
+                    # Quiet apt-get or github actions will exit code 143 the pipeline run.
+                    sudo apt-get install -qq -y --no-install-recommends \
                         ccache \
                         clang \
                         cmake \
@@ -78,9 +80,9 @@ jobs:
                     curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z
                     curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z
                     curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z
-                    7z x ${{ runner.temp }}\wxWidgets-$env:WX_WIDGETS_VERSION-headers.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-$env:WX_WIDGETS_VERSION_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x ${{ runner.temp }}\wxMSW-$env:WX_WIDGETS_VERSION_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
+                    7z x ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: Set up ccache
                 run: |
@@ -104,9 +106,9 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     mkdir build
-                    # Disable the warnings, or github actions will exit code 143 the pipeline run.
+                    # Disable the warnings or github actions will exit code 143 the pipeline run.
                     export CXXFLAGS=-w
-                    # Disable the warnings, or github actions will exit code 143 the pipeline run.
+                    # Disable the warnings or github actions will exit code 143 the pipeline run.
                     export CMAKE_MESSAGE_LOG_LEVEL=ERROR
                     export MAKEFLAGS=-j
                     cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .
