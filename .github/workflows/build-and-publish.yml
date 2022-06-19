@@ -31,7 +31,7 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
-                    sudo apt-add-repository 'deb https://repos.codelite.org/wx${WX_WIDGETS_VERSION}/ubuntu/ focal universe'
+                    sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.WX_WIDGETS_VERSION }}/ubuntu/ focal universe'
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
                     sudo apt-get update
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
@@ -64,12 +64,12 @@ jobs:
                 run: |
                     choco install --no-progress -y 7zip curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
-                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z
-                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z
-                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z
-                    7z x -aoa ${{ runner.temp }}\wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z -o${{ runner.temp }}\wxwidgets
-                    7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
+                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env:WX_WIDGETS_VERSION }}/wxWidgets-${{ env:WX_WIDGETS_VERSION }}-headers.7z
+                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env:WX_WIDGETS_VERSION }}/wxMSW-${{ env:WX_WIDGETS_VERSION }}_vc14x_x64_Dev.7z
+                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${{ env:WX_WIDGETS_VERSION }}/wxMSW-${{ env:WX_WIDGETS_VERSION }}_vc14x_x64_ReleaseDLL.7z
+                    7z x -aoa ${{ runner.temp }}\wxWidgets-${{ env:WX_WIDGETS_VERSION }}-headers.7z -o${{ runner.temp }}\wxwidgets
+                    7z x -aoa ${{ runner.temp }}\wxMSW-${{ env:WX_WIDGETS_VERSION }}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
+                    7z x -aoa ${{ runner.temp }}\wxMSW-${{ env:WX_WIDGETS_VERSION }}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: (${{ runner.os }}) Set up C++ Compiler
                 if: runner.os == 'Linux'
