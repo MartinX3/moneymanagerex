@@ -20,7 +20,6 @@ jobs:
             matrix:
                 os: [ ubuntu-latest, windows-latest, macos-latest ]
         env:
-            CCACHE_DIR: ${{ github.workspace }}/.ccache
             WX_WIDGETS_VERSION: 3.1.7
         steps:
             -   name: Check out
@@ -37,7 +36,6 @@ jobs:
                     sudo apt-get update
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
                     sudo apt-get install --no-install-recommends \
-                        ccache \
                         clang \
                         cmake \
                         gettext \
@@ -59,12 +57,12 @@ jobs:
 
             -   name: (${{ runner.os }}) Install important software
                 if: runner.os == 'macOS'
-                run: brew install ccache wxwidgets
+                run: brew install wxwidgets
 
             -   name: (${{ runner.os }}) Install important software
                 if: runner.os == 'Windows'
                 run: |
-                    choco install --no-progress -y 7zip ccache curl nsis
+                    choco install --no-progress -y 7zip curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
                     curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z
                     curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z
@@ -73,23 +71,11 @@ jobs:
                     7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
                     7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
-            -   name: Set up ccache
-                run: |
-                    mkdir ./.ccache
-                    ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
-
             -   name: (${{ runner.os }}) Set up C++ Compiler
                 if: runner.os == 'Linux'
                 run: |
                     sudo update-alternatives --set cc /usr/bin/clang
                     sudo update-alternatives --set c++ /usr/bin/clang++
-
-            -   name: Build cache
-                uses: actions/cache@v3
-                with:
-                    path: ${{ github.workspace }}/.ccache
-                    key: ${{ runner.os }}-build-cache-${{ hashFiles('**/lockfiles') }}
-                    restore-keys: ${{ runner.os }}-build-cache
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'Linux'
