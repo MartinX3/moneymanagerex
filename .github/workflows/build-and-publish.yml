@@ -107,8 +107,8 @@ jobs:
                     # Disable the warnings, or github actions will exit code 143 the pipeline run.
                     export CXXFLAGS=-w
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config . -- -quiet
-                    cmake --build . --target package -- -quiet
+                    cmake --log-level=ERROR -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .
+                    cmake --log-level=ERROR --build . --target package -- -quiet
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
