@@ -120,8 +120,8 @@ jobs:
                     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=11.6 .
                     cmake --build . --target package
 
+            -   uses: ilammy/msvc-dev-cmd@v1 # Only for the Windows build environment. Does nothing in the others.
             -   name: (${{ runner.os }}) Build release
-                uses: ilammy/msvc-dev-cmd@v1
                 if: runner.os == 'Windows'
                 run: |
                     mkdir build
