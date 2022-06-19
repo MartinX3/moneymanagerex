@@ -43,7 +43,7 @@ jobs:
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
                     sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.WX_WIDGETS_VERSION }}/ubuntu/ focal universe'
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
-                    sudo apt-get update -qq > /dev/null
+                    sudo apt-get update
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
                     sudo apt-get install --no-install-recommends \
                         ccache \
@@ -106,11 +106,10 @@ jobs:
                     mkdir build
                     # Disable the warnings or github actions will exit code 143 the pipeline run.
                     export CXXFLAGS=-w
-                    # Disable the warnings or github actions will exit code 143 the pipeline run.
-                    export CMAKE_MESSAGE_LOG_LEVEL=ERROR
                     export MAKEFLAGS=-j
                     cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .
-                    cmake --build . --target package
+                    cd build/
+                    cmake --build .. --target package
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
@@ -128,7 +127,7 @@ jobs:
                     cd build
                     setx wxwin ${{ runner.temp }}\wxwidgets
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
-                    cmake -G "Visual Studio 16 2019" ..
+                    cmake -G "Visual Studio 17 2022" ..
                     set "CL=/MP"
                     cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
