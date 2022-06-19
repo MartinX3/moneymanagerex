@@ -104,20 +104,20 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     mkdir build
+                    cd build/
                     # Disable the warnings or github actions will exit code 143 the pipeline run.
-                    export CXXFLAGS=-w
                     export MAKEFLAGS=-j
                     # "> /dev/null" or github actions will exit code 143 the pipeline run.
-                    cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config . > /dev/null
-                    cd build/
-                    cmake --build .. --target package
+                    cmake -DCMAKE_BUILD_TYPE=Release  -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .. > /dev/null
+                    cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
                 run: |
                     mkdir build
+                    cd build
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=11.6 .
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=11.6 ..
                     cmake --build . --target package
 
             -   uses: ilammy/msvc-dev-cmd@v1 # Only for the Windows build environment. Does nothing in the others.
@@ -126,10 +126,14 @@ jobs:
                 run: |
                     mkdir build
                     cd build
-                    setx wxwin ${{ runner.temp }}\wxwidgets
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
-                    cmake -G "Visual Studio 17 2022" ..
                     set "CL=/MP"
+                    setx wxwin ${{ runner.temp }}\wxwidgets
+
+                    echo ${{ runner.temp }}\wxwidgets
+                    dir ${{ runner.temp }}\wxwidgets
+
+                    cmake -G "Visual Studio 17 2022" ..
                     cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
