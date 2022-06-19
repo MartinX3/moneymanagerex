@@ -22,9 +22,6 @@ jobs:
         env:
             CCACHE_DIR: ${{ github.workspace }}/.ccache
         steps:
-            -   uses: ilammy/msvc-dev-cmd@v1
-                if: runner.os == 'Windows'
-
             -   name: (${{ runner.os }}) Setting up variables
                 if: runner.os == 'Linux' || runner.os == 'macOS'
                 run: |
@@ -46,9 +43,9 @@ jobs:
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
                     sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.WX_WIDGETS_VERSION }}/ubuntu/ focal universe'
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
-                    sudo apt-get update -qq
+                    sudo apt-get update -qq > /dev/null
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
-                    sudo apt-get install -qq -y --no-install-recommends \
+                    sudo apt-get install --no-install-recommends \
                         ccache \
                         clang \
                         cmake \
@@ -67,6 +64,7 @@ jobs:
                         wx-common \
                         wx3.1-headers \
                         wx3.1-i18n \
+                        -qq > /dev/null
 
             -   name: (${{ runner.os }}) Install important software
                 if: runner.os == 'macOS'
@@ -123,6 +121,7 @@ jobs:
                     cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
+                uses: ilammy/msvc-dev-cmd@v1
                 if: runner.os == 'Windows'
                 run: |
                     mkdir build
