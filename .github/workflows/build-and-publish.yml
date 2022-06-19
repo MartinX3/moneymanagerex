@@ -75,6 +75,7 @@ jobs:
                 run: |
                     choco install --no-progress -y 7zip ccache curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
+                    echo curl -foLOS ${{ runner.temp }} "https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z"
                     curl -foLOS ${{ runner.temp }} "https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z"
                     curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z
                     curl -fosLOS ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z
@@ -106,9 +107,11 @@ jobs:
                     mkdir build
                     # Disable the warnings, or github actions will exit code 143 the pipeline run.
                     export CXXFLAGS=-w
+                    # Disable the warnings, or github actions will exit code 143 the pipeline run.
+                    export CMAKE_MESSAGE_LOG_LEVEL=ERROR
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config . --loglevel ERROR
-                    cmake --build . --target package --loglevel ERROR
+                    cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .
+                    cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
