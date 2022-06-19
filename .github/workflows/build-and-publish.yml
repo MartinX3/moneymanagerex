@@ -107,7 +107,8 @@ jobs:
                     # Disable the warnings or github actions will exit code 143 the pipeline run.
                     export CXXFLAGS=-w
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .
+                    # "> /dev/null" or github actions will exit code 143 the pipeline run.
+                    cmake -DCMAKE_BUILD_TYPE=Release -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config . > /dev/null
                     cd build/
                     cmake --build .. --target package
 
