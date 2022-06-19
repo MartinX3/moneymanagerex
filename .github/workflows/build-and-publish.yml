@@ -21,17 +21,8 @@ jobs:
                 os: [ ubuntu-latest, windows-latest, macos-latest ]
         env:
             CCACHE_DIR: ${{ github.workspace }}/.ccache
+            WX_WIDGETS_VERSION: 3.1.7
         steps:
-            -   name: (${{ runner.os }}) Setting up variables
-                if: runner.os == 'Linux' || runner.os == 'macOS'
-                run: |
-                    echo "WX_WIDGETS_VERSION=3.1.7" >> $GITHUB_ENV
-
-            -   name: (${{ runner.os }}) Setting up variables
-                if: runner.os == 'Windows'
-                run: |
-                    echo "WX_WIDGETS_VERSION=3.1.7" >> $env:GITHUB_ENV
-
             -   name: Check out
                 uses: actions/checkout@v3
                 with:
@@ -104,20 +95,20 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     mkdir build
-                    cd build/
                     # Disable the warnings or github actions will exit code 143 the pipeline run.
                     export MAKEFLAGS=-j
                     # "> /dev/null" or github actions will exit code 143 the pipeline run.
-                    cmake -DCMAKE_BUILD_TYPE=Release  -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .. > /dev/null
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config . > /dev/null
+                    cd build
                     cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
                 run: |
                     mkdir build
-                    cd build
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=11.6 ..
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=11.6 .
+                    cd build
                     cmake --build . --target package
 
             -   uses: ilammy/msvc-dev-cmd@v1 # Only for the Windows build environment. Does nothing in the others.
@@ -125,7 +116,6 @@ jobs:
                 if: runner.os == 'Windows'
                 run: |
                     mkdir build
-                    cd build
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
                     set "CL=/MP"
                     setx wxwin ${{ runner.temp }}\wxwidgets
@@ -133,7 +123,8 @@ jobs:
                     echo ${{ runner.temp }}\wxwidgets
                     dir ${{ runner.temp }}\wxwidgets
 
-                    cmake -G "Visual Studio 17 2022" ..
+                    cmake -G "Visual Studio 17 2022 Win64" .
+                    cd build
                     cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
