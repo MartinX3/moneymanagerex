@@ -22,6 +22,7 @@ jobs:
         env:
             MACOS_VERSION: '12.5'
             WINDOWS_VISUAL_STUDIO_GENERATOR: 'Visual Studio 17 2022'
+            WINDOWS_VISUAL_STUDIO_WXLibs_Folder: 'vc14x_x64_dll'
             WX_WIDGETS_VERSION: '3.2'
             WX_WIDGETS_VERSION_PATCH: '0'
         steps:
@@ -70,10 +71,8 @@ jobs:
                     mkdir ${{ runner.temp }}\wxwidgets
                     curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}/wxWidgets-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}-headers.7z
                     curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}/wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_Dev.7z
-                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}/wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_ReleaseDLL.7z
                     7z x -aoa ${{ runner.temp }}\wxWidgets-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}-headers.7z -o${{ runner.temp }}\wxwidgets
                     7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: (${{ runner.os }}) Set up C++ Compiler
                 if: runner.os == 'Linux'
@@ -88,8 +87,10 @@ jobs:
                     cd build/
                     export MAKEFLAGS=-j
                     # '-DCMAKE_CXX_FLAGS="-w"' or github actions will exit code 143 the pipeline run.
-                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config ..
-                    cmake --build . --target package
+                    # "> /dev/null" or github actions will exit code 143 the pipeline run.
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .. > /dev/null
+                    # "> /dev/null" or github actions will 'Killed' the pipeline run.
+                    cmake --build . --target package > /dev/null
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
@@ -109,7 +110,8 @@ jobs:
                     cd build
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
                     set "CL=/MP"
-                    setx wxWidgets_LIBRARIES "${{ runner.temp }}\wxwidgets\lib"
+                    setx wxLibFolder ${{ runner.temp }}\wxwidgets\lib\${{ env.WINDOWS_VISUAL_STUDIO_WXLibs_Folder }}
+                    setx wxwin ${{ runner.temp }}\wxwidgets
 
                     cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" -A "x64" ..
                     cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
