@@ -109,14 +109,9 @@ jobs:
                     cd build
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
                     set "CL=/MP"
-                    setx wxLibFolder ${{ runner.temp }}\wxwidgets\lib
-                    setx wxwin ${{ runner.temp }}\wxwidgets
-
-                    echo ${{ runner.temp }}\wxwidgets
-                    dir ${{ runner.temp }}\wxwidgets
 
                     cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" ..
-                    cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
+                    cmake --build . -DwxWidgets_ROOT_DIR="${{ runner.temp }}\wxwidgets" -DwxWidgets_LIB_DIR="${{ runner.temp }}\wxwidgets\lib" --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
             -   name: (${{ runner.os }}) Show release
