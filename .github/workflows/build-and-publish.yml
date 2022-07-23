@@ -18,9 +18,12 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ ubuntu-latest, windows-latest, macos-latest ]
+                os: [ ubuntu-22.04, windows-2022, macos-12 ]
         env:
-            WX_WIDGETS_VERSION: '3.1.7'
+            MACOS_VERSION: '12.5'
+            WINDOWS_VISUAL_STUDIO_GENERATOR: 'Visual Studio 17 2022'
+            WX_WIDGETS_VERSION: '3.2'
+            WX_WIDGETS_VERSION_PATCH: '0'
         steps:
             -   name: Check out
                 uses: actions/checkout@v3
@@ -31,8 +34,7 @@ jobs:
                 if: runner.os == 'Linux'
                 run: |
                     sudo apt-key adv --fetch-keys https://repos.codelite.org/CodeLite.asc
-                    sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.WX_WIDGETS_VERSION }}/ubuntu/ focal universe'
-                    # Quiet apt-get or github actions will exit code 143 the pipeline run.
+                    sudo apt-add-repository 'deb https://repos.codelite.org/wx${{ env.WX_WIDGETS_VERSION }}.${{ env.WX_WIDGETS_VERSION_PATCH }}/ubuntu/ jammy universe'
                     sudo apt-get update
                     # Quiet apt-get or github actions will exit code 143 the pipeline run.
                     sudo apt-get install --no-install-recommends \
@@ -41,18 +43,18 @@ jobs:
                         gettext \
                         libcurl4-openssl-dev \
                         liblua5.3-dev \
-                        libwxbase3.1-0-unofficial \
-                        libwxbase3.1unofficial-dev \
-                        libwxgtk-media3.1-0-unofficial \
-                        libwxgtk-media3.1unofficial-dev \
-                        libwxgtk-webview3.1-0-unofficial \
-                        libwxgtk-webview3.1unofficial-dev \
-                        libwxgtk3.1-0-unofficial \
-                        libwxgtk3.1unofficial-dev \
+                        libwxbase${{ env.WX_WIDGETS_VERSION }}-0-unofficial \
+                        libwxbase${{ env.WX_WIDGETS_VERSION }}unofficial-dev \
+                        libwxgtk-media${{ env.WX_WIDGETS_VERSION }}-0-unofficial \
+                        libwxgtk-media${{ env.WX_WIDGETS_VERSION }}unofficial-dev \
+                        libwxgtk-webview${{ env.WX_WIDGETS_VERSION }}-0-unofficial \
+                        libwxgtk-webview${{ env.WX_WIDGETS_VERSION }}unofficial-dev \
+                        libwxgtk${{ env.WX_WIDGETS_VERSION }}-0-unofficial \
+                        libwxgtk${{ env.WX_WIDGETS_VERSION }}unofficial-dev \
                         rapidjson-dev \
                         wx-common \
-                        wx3.1-headers \
-                        wx3.1-i18n \
+                        wx${{ env.WX_WIDGETS_VERSION }}-headers \
+                        wx${{ env.WX_WIDGETS_VERSION }}-i18n \
                         -qq > /dev/null
 
             -   name: (${{ runner.os }}) Install important software
@@ -64,12 +66,12 @@ jobs:
                 run: |
                     choco install --no-progress -y 7zip curl nsis
                     mkdir ${{ runner.temp }}\wxwidgets
-                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z
-                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z
-                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}/wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z
-                    7z x -aoa ${{ runner.temp }}\wxWidgets-${env:WX_WIDGETS_VERSION}-headers.7z -o${{ runner.temp }}\wxwidgets
-                    7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
-                    7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
+                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}/wxWidgets-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}-headers.7z
+                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}/wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_Dev.7z
+                    curl -fsLOS --output-dir ${{ runner.temp }} https://github.com/wxWidgets/wxWidgets/releases/download/v${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}/wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_ReleaseDLL.7z
+                    7z x -aoa ${{ runner.temp }}\wxWidgets-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}-headers.7z -o${{ runner.temp }}\wxwidgets
+                    7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_Dev.7z -o${{ runner.temp }}\wxwidgets
+                    7z x -aoa ${{ runner.temp }}\wxMSW-${env:WX_WIDGETS_VERSION}.${{ env.WX_WIDGETS_VERSION_PATCH }}_vc14x_x64_ReleaseDLL.7z -o${{ runner.temp }}\wxwidgets
 
             -   name: (${{ runner.os }}) Set up C++ Compiler
                 if: runner.os == 'Linux'
@@ -82,8 +84,8 @@ jobs:
                 run: |
                     mkdir build
                     cd build/
-                    # Disable the warnings or github actions will exit code 143 the pipeline run.
                     export MAKEFLAGS=-j
+                    # '-DCMAKE_CXX_FLAGS="-w"' or github actions will exit code 143 the pipeline run.
                     # "> /dev/null" or github actions will exit code 143 the pipeline run.
                     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .. > /dev/null
                     cmake --build . --target package
@@ -94,7 +96,8 @@ jobs:
                     mkdir build
                     cd build
                     export MAKEFLAGS=-j
-                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=11.6 ..
+                    # '-DCMAKE_CXX_FLAGS="-w"' or github actions will exit code 143 the pipeline run.
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DMACOSX_DEPLOYMENT_TARGET=${{ env.MACOS_VERSION }} ..
                     cmake --build . --target package
 
             -   uses: ilammy/msvc-dev-cmd@v1 # Only for the Windows build environment. Does nothing in the others.
@@ -110,7 +113,7 @@ jobs:
                     echo ${{ runner.temp }}\wxwidgets
                     dir ${{ runner.temp }}\wxwidgets
 
-                    cmake -G "Visual Studio 17 2022" ..
+                    cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" ..
                     cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
