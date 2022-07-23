@@ -111,7 +111,7 @@ jobs:
                     set "CL=/MP"
                     setx wxWidgets_LIBRARIES "${{ runner.temp }}\wxwidgets\lib"
 
-                    cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" -A "Win64" ..
+                    cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" -A "x64" ..
                     cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
@@ -137,3 +137,18 @@ jobs:
                 with:
                     name: MacOS-Release
                     path: build/*.dmg
+
+            -   name: Do something on fail
+                if: ${{ failure() }} && runner.os == 'Linux'
+                run: |
+                    echo "ls -lha"
+                    ls -lha
+                    echo "ls -lha build"
+                    ls -lha build
+            -   name: Do something on fail
+                if: ${{ failure() }} && runner.os == 'Windows'
+                run: |
+                    echo "dir"
+                    dir
+                    echo "dir build"
+                    dir build
