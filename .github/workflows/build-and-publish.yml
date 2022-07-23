@@ -21,7 +21,7 @@ jobs:
                 os: [ ubuntu-22.04, windows-2022, macos-12 ]
         env:
             MACOS_VERSION: '12.5'
-            WINDOWS_VISUAL_STUDIO_GENERATOR: 'Visual Studio 17 2022 Win64'
+            WINDOWS_VISUAL_STUDIO_GENERATOR: 'Visual Studio 17 2022'
             WX_WIDGETS_VERSION: '3.2'
             WX_WIDGETS_VERSION_PATCH: '0'
         steps:
@@ -43,6 +43,7 @@ jobs:
                         gettext \
                         libcurl4-openssl-dev \
                         liblua5.3-dev \
+                        libpcre2-32-0 \
                         libwxbase${{ env.WX_WIDGETS_VERSION }}-0-unofficial \
                         libwxbase${{ env.WX_WIDGETS_VERSION }}unofficial-dev \
                         libwxgtk-media${{ env.WX_WIDGETS_VERSION }}-0-unofficial \
@@ -51,6 +52,7 @@ jobs:
                         libwxgtk-webview${{ env.WX_WIDGETS_VERSION }}unofficial-dev \
                         libwxgtk${{ env.WX_WIDGETS_VERSION }}-0-unofficial \
                         libwxgtk${{ env.WX_WIDGETS_VERSION }}unofficial-dev \
+                        libxtst6 \
                         rapidjson-dev \
                         wx-common \
                         wx${{ env.WX_WIDGETS_VERSION }}-headers \
@@ -109,7 +111,7 @@ jobs:
                     set "CL=/MP"
                     setx wxWidgets_LIBRARIES "${{ runner.temp }}\wxwidgets\lib"
 
-                    cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" ..
+                    cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" -A "Win64" ..
                     cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
