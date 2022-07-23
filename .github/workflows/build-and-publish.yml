@@ -88,7 +88,8 @@ jobs:
                     # '-DCMAKE_CXX_FLAGS="-w"' or github actions will exit code 143 the pipeline run.
                     # "> /dev/null" or github actions will exit code 143 the pipeline run.
                     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .. > /dev/null
-                    cmake --build . --target package
+                    # "> /dev/null" or github actions will 'Killed' the pipeline run.
+                    cmake --build . --target package > /dev/null
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
@@ -108,6 +109,7 @@ jobs:
                     cd build
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
                     set "CL=/MP"
+                    setx wxLibFolder ${{ runner.temp }}\wxwidgets\lib
                     setx wxwin ${{ runner.temp }}\wxwidgets
 
                     echo ${{ runner.temp }}\wxwidgets
