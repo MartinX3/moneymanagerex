@@ -21,7 +21,7 @@ jobs:
                 os: [ ubuntu-22.04, windows-2022, macos-12 ]
         env:
             MACOS_VERSION: '12.5'
-            WINDOWS_VISUAL_STUDIO_GENERATOR: 'Visual Studio 17 2022'
+            WINDOWS_VISUAL_STUDIO_GENERATOR: 'Visual Studio 17 2022 Win64'
             WX_WIDGETS_VERSION: '3.2'
             WX_WIDGETS_VERSION_PATCH: '0'
         steps:
@@ -86,10 +86,8 @@ jobs:
                     cd build/
                     export MAKEFLAGS=-j
                     # '-DCMAKE_CXX_FLAGS="-w"' or github actions will exit code 143 the pipeline run.
-                    # "> /dev/null" or github actions will exit code 143 the pipeline run.
-                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config .. > /dev/null
-                    # "> /dev/null" or github actions will 'Killed' the pipeline run.
-                    cmake --build . --target package > /dev/null
+                    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-w" -DwxWidgets_CONFIG_EXECUTABLE=/usr/bin/wx-config ..
+                    cmake --build . --target package
 
             -   name: (${{ runner.os }}) Build release
                 if: runner.os == 'macOS'
@@ -109,9 +107,10 @@ jobs:
                     cd build
                     set "PATH=%PATH%;%DevEnvDir%CommonExtensions\Microsoft\CMake\CMake\bin"
                     set "CL=/MP"
+                    setx wxWidgets_LIBRARIES "${{ runner.temp }}\wxwidgets\lib"
 
                     cmake -G "${{ env.WINDOWS_VISUAL_STUDIO_GENERATOR }}" ..
-                    cmake --build . -DwxWidgets_ROOT_DIR="${{ runner.temp }}\wxwidgets" -DwxWidgets_LIB_DIR="${{ runner.temp }}\wxwidgets\lib" --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
+                    cmake --build . --target install --config Release -- /maxcpucount /verbosity:minimal /nologo /p:PreferredToolArchitecture=x64
                     cpack .
 
             -   name: (${{ runner.os }}) Show release
